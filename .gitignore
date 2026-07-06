@@ -1,0 +1,19 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+
+# Unused model files (only best_model.h5 is used by the app)
+best_model_cont.h5
+final_model_after_resume.h5
+model_0.h5
+
+# Training data & scripts (not needed for deployment)
+Main_folder/
+
+# Runtime-generated uploads
+static/shots/*.png
+static/shots/*.jpg
+static/shots/*.jpeg
+static/shots/*.gif

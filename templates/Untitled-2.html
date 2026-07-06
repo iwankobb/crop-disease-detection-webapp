@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crop Detection — Results</title>
+    <!-- (your styles untouched – omitted here for brevity, keep as-is) -->
+    <style>
+      /* ---------- Base page + card (your original design) ---------- */
+      :root {
+        --text: #0f1724;
+        --muted: #6b7a88;
+        --sub: #5b6b7a;
+        --glass-1: rgba(255, 255, 255, 0.85);
+        --glass-2: rgba(255, 255, 255, 0.8);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          Roboto, "Helvetica Neue", Arial;
+        background: linear-gradient(
+          180deg,
+          #f6fbff 0%,
+          #eef7f3 50%,
+          #f3f7ff 100%
+        );
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .results-page {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 4rem 1rem;
+      }
+
+      .result-card {
+        width: 100%;
+        max-width: 1260px;
+        border-radius: 18px;
+        box-shadow: 0 20px 50px rgba(12, 35, 60, 0.12);
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        background: linear-gradient(180deg, var(--glass-1), var(--glass-2));
+        backdrop-filter: blur(6px) saturate(120%);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+        animation: appear 0.45s ease both;
+      }
+      .result-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 30px 70px rgba(12, 35, 60, 0.16);
+      }
+
+      @media (min-width: 900px) {
+        .result-card {
+          grid-template-columns: 55% 45%;
+        }
+      }
+
+      .image-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        position: relative;
+        background: linear-gradient(
+          90deg,
+          rgba(240, 255, 245, 0.6),
+          rgba(240, 248, 255, 0.3)
+        );
+      }
+      .result-img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 12px 35px rgba(6, 24, 50, 0.12);
+        transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.2, 1),
+          filter 0.35s ease;
+        transform-origin: center;
+        border: 6px solid rgba(255, 255, 255, 0.5);
+      }
+      .result-img:hover {
+        transform: scale(1.02) rotate(-0.5deg);
+        filter: saturate(1.06);
+      }
+
+      .info {
+        padding: 2.2rem 2.4rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1.25rem;
+      }
+      .headline {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+      }
+      .title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        margin: 0;
+      }
+      .sub {
+        font-size: 0.95rem;
+        color: var(--sub);
+      }
+
+      .label-badge {
+        display: inline-block;
+        padding: 0.6rem 0.9rem;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #d9f7e1, #b8efcd);
+        color: #075b2e;
+        font-weight: 700;
+        font-size: 1rem;
+        box-shadow: inset 0 -6px 18px rgba(0, 0, 0, 0.03);
+      }
+
+      .meta-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      .tiny {
+        font-size: 0.86rem;
+        color: #98a3ad;
+      }
+
+      .cta-row {
+        margin-top: 1rem;
+        display: flex;
+        gap: 0.85rem;
+        align-items: center;
+      }
+      .btn-primary-ghost,
+      .btn-download {
+        padding: 0.65rem 1.05rem;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .btn-primary-ghost {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid rgba(15, 23, 36, 0.08);
+      }
+      .btn-primary-ghost:hover {
+        transform: translateY(-2px);
+      }
+      .btn-download {
+        background: linear-gradient(90deg, #2bb673, #1f9a59);
+        color: white;
+        box-shadow: 0 8px 24px rgba(31, 154, 89, 0.18);
+      }
+      .btn-download:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 40px rgba(31, 154, 89, 0.22);
+      }
+
+      /* entrance */
+      @keyframes appear {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* ---------- Prediction details (new) ---------- */
+      .prediction-details {
+        margin-top: 1.5rem;
+        padding: 1.15rem;
+        border-radius: 14px;
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
+        background: linear-gradient(135deg, #f8fff9, #f0fdf4);
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        animation: fadeIn 0.35s ease both;
+        border: 1px solid rgba(0, 0, 0, 0.02);
+      }
+      .prediction-icon {
+        flex-shrink: 0;
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        background: rgba(0, 0, 0, 0.04);
+      }
+      .prediction-text h4 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+      }
+      .prediction-text p {
+        margin: 0.4rem 0 0;
+        font-size: 0.95rem;
+        color: #3b4a56;
+        line-height: 1.45;
+      }
+
+      .pred-grid {
+        margin-top: 0.85rem;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+      }
+      @media (min-width: 680px) {
+        .pred-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .pred-box {
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 10px;
+        padding: 0.8rem;
+        border: 1px solid rgba(0, 0, 0, 0.02);
+        box-shadow: inset 0 -6px 18px rgba(0, 0, 0, 0.01);
+      }
+      .pred-box h5 {
+        margin: 0 0 0.45rem 0;
+        font-size: 0.92rem;
+      }
+      .pred-list {
+        margin: 0;
+        padding-left: 1.15rem;
+        color: #3e4b53;
+        font-size: 0.92rem;
+        line-height: 1.4;
+      }
+
+      .sev-badge {
+        display: inline-block;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 0.35rem 0.6rem;
+        border-radius: 999px;
+        color: white;
+        text-transform: capitalize;
+      }
+      .sev-low {
+        background: linear-gradient(90deg, #56d6a5, #2bb673);
+      }
+      .sev-med {
+        background: linear-gradient(90deg, #ffd36b, #ff9b2b);
+      }
+      .sev-high {
+        background: linear-gradient(90deg, #ff8a7a, #ff4b44);
+      }
+
+      .progress {
+        height: 10px;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.06);
+        border-radius: 999px;
+        overflow: hidden;
+        margin-top: 0.6rem;
+      }
+      .progress > i {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #6ad78a, #2bb673);
+        border-radius: 999px;
+        transition: width 0.6s ease;
+      }
+
+      .small-muted {
+        font-size: 0.86rem;
+        color: #778992;
+      }
+
+      /* fallback when unknown label */
+      .unknown {
+        margin-top: 1rem;
+        padding: 0.9rem;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #fff9f0, #fff3ec);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Root container — also embeds data attributes so JS can read server values -->
+    <section class="results-page">
+      {% set threshold = 50 %} {% if confidence < threshold %}
+      <div
+        style="
+          margin-bottom: 1rem;
+          padding: 1rem;
+          border-radius: 8px;
+          background: #fff0f1;
+          color: #8c2b2b;
+          font-weight: 600;
+        "
+      >
+        ⚠️ Low confidence ({{ confidence|round(2) }}%) — The image may not be a
+        crop leaf. Please try uploading a clearer image.
+      </div>
+      {% endif %}
+
+      <div
+        class="result-card"
+        id="card-root"
+        data-label="{{ label|default('unknown') }}"
+        data-confidence="{{ confidence|default('') }}"
+        data-variablename="{{ variable_name|default('unknown_image') }}"
+        data-size="{{ size|default('') }}"
+      >
+        <!-- IMAGE AREA -->
+        <div class="image-wrap">
+          {% if size == 2 %}
+          <img
+            src="{{ url_for('static', filename='shots/' ~ variable_name ~ '.png') }}"
+            alt="Detected crop image"
+            class="result-img"
+            width="720"
+            height="480"
+            loading="eager"
+          />
+          {% else %}
+          <img
+            src="{{ url_for('static', filename='shots/' ~ variable_name) }}"
+            alt="Detected crop image"
+            class="result-img"
+            width="720"
+            height="480"
+            loading="eager"
+          />
+          {% endif %}
+        </div>
+
+        <!-- INFO AREA -->
+        <div class="info">
+          <div class="headline">
+            <div>
+              <h3 class="title">Crop Detection Results</h3>
+              <div class="sub">
+                Detailed prediction snapshot — crisp, fast, and clear.
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="tiny">Prediction confidence & label</div>
+            <div style="margin-top: 0.6rem">
+              <span id="label-badge" class="label-badge"
+                >{{ label }} — {{ confidence|round(2) }}%</span
+              >
+            </div>
+          </div>
+
+          <!-- Dynamic prediction info will be injected here -->
+          <div id="prediction-info"></div>
+
+          <div class="cta-row">
+            <a
+              href="/input"
+              class="btn-primary-ghost"
+              style="
+                padding: 0.55rem 0.95rem;
+                border-radius: 999px;
+                text-decoration: none;
+              "
+            >
+              ← Back
+            </a>
+          </div>
+
+          <div class="tiny" style="margin-top: 0.8rem">
+            Tip: Upload a clear close-up for best detection. Results cached for
+            quick re-check.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      const PREDICTIONS = /* your big PREDICTIONS object (unchanged) */ {};
+
+      function classifySeverityClass(sev) {
+        if (!sev) return "sev-low";
+        const s = String(sev).toLowerCase();
+        if (s === "low") return "sev-low";
+        if (s === "medium" || s === "med") return "sev-med";
+        if (s === "high") return "sev-high";
+        return "sev-low";
+      }
+
+      function confidenceToPercent(conf) {
+        if (!conf) return 0;
+        let s = String(conf).trim();
+        if (s.endsWith("%")) s = s.slice(0, -1);
+        let n = parseFloat(s);
+        if (isNaN(n)) return 0;
+        if (n <= 1 && n > 0) n = n * 100;
+        if (n < 0) n = 0;
+        if (n > 100) n = 100;
+        return Math.round(n);
+      }
+
+      function normalizeLabelKey(raw) {
+        if (!raw) return "";
+        let s = String(raw).trim().toLowerCase();
+        s = s.replace(/\.(jpg|jpeg|png|webp|bmp)$/i, "");
+        s = s.replace(/[\s\/\-]+/g, "_");
+        s = s.replace(/_+/g, "_");
+        s = s.replace(/[^a-z0-9_]/g, "");
+        return s;
+      }
+
+      function lookupPredictionByBestEffort(key) {
+        if (!key) return null;
+        if (PREDICTIONS[key]) return PREDICTIONS[key];
+        const norm = normalizeLabelKey(key);
+        if (PREDICTIONS[norm]) return PREDICTIONS[norm];
+        const keys = Object.keys(PREDICTIONS);
+        for (const k of keys) {
+          if (k.includes(norm) && norm.length > 2) return PREDICTIONS[k];
+          if (norm.includes(k) && k.length > 2) return PREDICTIONS[k];
+        }
+        const noscore = norm.replace(/_/g, "");
+        for (const k of keys) {
+          if (
+            k.replace(/_/g, "").includes(noscore) ||
+            noscore.includes(k.replace(/_/g, ""))
+          )
+            return PREDICTIONS[k];
+        }
+        return null;
+      }
+
+      (function renderPrediction() {
+        const root = document.getElementById("card-root");
+        const labelRaw = root.getAttribute("data-label") || "";
+        const confRaw = root.getAttribute("data-confidence") || "";
+        const confPct = confidenceToPercent(confRaw);
+
+        // If confidence is below threshold (50) don’t inject full details
+        const threshold = 50;
+        if (confPct < threshold) return;
+
+        const container = document.getElementById("prediction-info");
+        let p = lookupPredictionByBestEffort(labelRaw);
+        if (!p) p = PREDICTIONS["unknown"];
+        const icon = p.icon || "❓";
+        const title = p.title || labelRaw || "Unknown result";
+        const short = p.short || "No summary available.";
+        const sevClass = classifySeverityClass(p.severity);
+        const severityText = p.severity || "unknown";
+        const symptoms = p.symptoms || [];
+        const spread = p.spread || "—";
+        const management = p.management || [];
+        const prevention = p.prevention || [];
+        const notes = p.notes || "";
+
+        container.innerHTML = `
+          <div class="prediction-details">
+            <div class="prediction-icon">${icon}</div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div>
+                  <h4>${title}</h4>
+                  <div class="small-muted">${short}</div>
+                </div>
+                <div style="text-align:right">
+                  <div class="sev-badge ${sevClass}">${severityText}</div>
+                  <div class="small-muted" style="margin-top:6px">Confidence: ${confPct}%</div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>CropScan • Award-Grade Diagnosis</title>
+    <meta
+      name="description"
+      content="AI-powered plant disease diagnosis delivered with cinematic flair."
+    />
+
+    <!--  Google font (only 1 request)  -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300..900&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!--  Tiny color-scheme toggle  -->
+    <script>
+      window.matchMedia("(prefers-color-scheme: dark)").matches &&
+        document.documentElement.classList.add("dark");
+    </script>
+
+    <style>
+      /*  Design tokens  */
+      :root {
+        --bg: #f0f4f8;
+        --bg-glass: rgba(255, 255, 255, 0.55);
+        --text: #0f1724;
+        --accent: #00d2a8;
+        --accent-dark: #00a884;
+        --danger: #ff3b5c;
+        --muted: #6b7a88;
+        --radius: 24px;
+        --font: "Inter", system-ui, -apple-system;
+        --mono: "JetBrains Mono", monospace;
+      }
+      .dark {
+        --bg: #0e141b;
+        --bg-glass: rgba(20, 30, 48, 0.55);
+        --text: #f0f4f8;
+        --accent: #00ffc8;
+        --accent-dark: #00d2a8;
+        --muted: #a0aec0;
+      }
+
+      /*  Reset  */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--font);
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        overflow-x: hidden;
+      }
+
+      /*  Card shell  */
+      .card {
+        width: 100%;
+        max-width: 1100px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-radius: var(--radius);
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px) saturate(180%);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15),
+          0 0 0 1px rgba(255, 255, 255, 0.1);
+        animation: fadeIn 1s ease;
+        overflow: hidden;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+      }
+
+      /*  Left side  */
+      .image-side {
+        position: relative;
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(0, 210, 168, 0.05) 0%,
+          transparent 70%
+        );
+      }
+      .image {
+        width: 90%;
+        height: 90%;
+        object-fit: cover;
+        border-radius: var(--radius);
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.4s;
+      }
+      .image:hover {
+        transform: scale(1.03);
+      }
+      .badge {
+        font-size: 0.9rem;
+        font-weight: 800;
+        padding: 0.5rem 1rem;
+        border-radius: 999px;
+        color: #fff;
+        background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+        box-shadow: 0 4px 12px -2px var(--accent);
+      }
+
+      /*  Right side  */
+      .info {
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1.5rem;
+      }
+      h1 {
+        font-size: 2.2rem;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+      }
+      .subtitle {
+        font-size: 1rem;
+        color: var(--muted);
+      }
+      .label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+      }
+      .label svg {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+      }
+      .progress {
+        height: 6px;
+        background: rgba(0, 0, 0, 0.08);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .progress > i {
+        height: 100%;
+        display: block;
+        background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+        border-radius: 999px;
+        transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .details {
+        font-size: 0.9rem;
+        line-height: 1.7;
+        max-height: 280px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+      }
+      .details::-webkit-scrollbar {
+        width: 4px;
+      }
+      .details::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 4px;
+      }
+      .details h4 {
+        margin: 0.8rem 0 0.3rem;
+        font-size: 1rem;
+      }
+      .details ul {
+        margin-left: 1.2rem;
+      }
+      .btn {
+        align-self: flex-start;
+        margin-top: 0.5rem;
+        padding: 0.9rem 1.8rem;
+        border: none;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #fff;
+        background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -8px var(--accent);
+      }
+
+      /*  Responsive  */
+      @media (max-width: 900px) {
+        .card {
+          grid-template-columns: 1fr;
+        }
+        .image-side {
+          min-height: 40vh;
+        }
+      }
+
+      .confidence-and-label-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 0 20px 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main
+      class="card"
+      id="card-root"
+      data-label="{{ label|default('unknown') }}"
+      data-confidence="{{ confidence|default(0) }}"
+    >
+      <!--  Image side  -->
+      <div class="image-side">
+        <img
+          src="{{ url_for('static', filename='shots/' ~ variable_name) }}"
+          alt="Crop sample"
+          class="image"
+          loading="eager"
+        />
+      </div>
+
+      <!--  Info side  -->
+      <div class="info">
+        <div>
+          <h1>Crop<span style="color: var(--accent)">Scan</span></h1>
+        </div>
+
+        <div>
+          <div class="confidence-and-label-container">
+            <div class="label">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                />
+              </svg>
+              <span id="label-name">{{ label }}</span>
+            </div>
+            <div class="badge" id="confidence-badge">
+              {{ (confidence|float)|round(2) }}%
+            </div>
+          </div>
+          <div class="progress"><i id="bar"></i></div>
+        </div>
+
+        <div class="details" id="details">Loading details…</div>
+
+        <button class="btn" onclick="window.location.href='/input'">
+          ← Scan Another
+        </button>
+      </div>
+    </main>
+
+    <script>
+      /* ---------- Disease encyclopedia ---------- */
+      const guide = {
+        "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": {
+          occurrence:
+            "Fungus *Cercospora zeae-maydis* loves warm (25-30 °C) humid weather.",
+          symptoms: "Narrow gray-tan lesions with dark margins on leaves.",
+          spread: "Wind-borne spores from crop residue.",
+          management:
+            "Rotate crops, use resistant hybrids, apply fungicides at tasseling.",
+          prevention:
+            "Plow residues, wider rows, early planting in risky regions.",
+        },
+
+        "Corn_(maize)__Common_rust": {
+          occurrence:
+            "Fungus *Puccinia sorghi*, cool (15-23 °C) moist conditions.",
+          symptoms: "Orange-red pustules on both leaf surfaces.",
+          spread: "Long-distance wind-borne spores.",
+          management: "Resistant cultivars + early fungicide.",
+          prevention: "Avoid late planting, rotate crops.",
+        },
+
+        "Corn_(maize)___Northern_Leaf_Blight": {
+          occurrence:
+            "Fungus *Exserohilum turcicum*, moderate temps + long leaf wetness.",
+          symptoms: "Cigar-shaped gray-green lesions.",
+          spread: "Spores via wind/rain from residues.",
+          management:
+            "Resistant hybrids, crop rotation, residue burial, fungicides.",
+          prevention: "Sanitation, airflow, timely sowing.",
+        },
+
+        "Corn_(maize)___healthy": {
+          occurrence: "No pathogen detected.",
+          symptoms: "Normal green foliage.",
+          management: "Balanced nutrition, good irrigation.",
+          prevention: "Regular scouting & rotation.",
+        },
+
+        Grape___Black_rot: {
+          occurrence: "Fungus *Guignardia bidwellii* in warm wet weather.",
+          symptoms: "Brown leaf spots, black shriveled berries (mummies).",
+          spread: "Spores from mummies during rain.",
+          management: "Remove mummies, fungicides at bloom.",
+          prevention: "Airflow training, debris removal.",
+        },
+
+        "Grape__Esca(Black_Measles)": {
+          occurrence: "Multiple fungi invade pruning wounds.",
+          symptoms: "Tiger-stripe leaves, bitter berries, internal wood rot.",
+          management: "Sanitize tools, wound protectants, irrigation.",
+          prevention: "Avoid large wet-season pruning.",
+        },
+
+        "Grape__Leaf_blight(Isariopsis_Leaf_Spot)": {
+          occurrence: "Fungus *Pseudocercospora vitis* in humid climates.",
+          symptoms: "Angular brown spots with yellow halos.",
+          management: "Increase airflow, preventive fungicides.",
+          prevention: "Proper spacing & weed control.",
+        },
+
+        Grape___healthy: {
+          occurrence: "No infection.",
+          symptoms: "Normal growth.",
+          management: "Maintain hygiene.",
+          prevention: "Routine monitoring.",
+        },
+
+        Tomato___Bacterial_spot: {
+          occurrence: "Bacteria *Xanthomonas* in warm wet fields.",
+          symptoms: "Water-soaked leaf spots with yellow halos, scabby fruit.",
+          spread: "Rain splash, tools, seeds.",
+          management: "Copper sprays, certified seed.",
+          prevention: "3-4 yr rotation, tool disinfection.",
+        },
+
+        Tomato___Early_blight: {
+          occurrence: "Fungus *Alternaria solani* in warm humidity.",
+          symptoms: "Target-like lesions on older leaves & fruit.",
+          management: "Crop rotation, staking, fungicides.",
+          prevention: "Resistant varieties, soil-level irrigation.",
+        },
+
+        Tomato___Late_blight: {
+          occurrence: "Oomycete *Phytophthora infestans*, cool wet weather.",
+          symptoms: "Large water-soaked lesions with white mold.",
+          management: "Destroy infected plants, systemic fungicides.",
+          prevention: "Resistant hybrids, mulch to reduce splash.",
+        },
+
+        Tomato___Leaf_Mold: {
+          occurrence:
+            "Fungus *Cladosporium fulvum*, high humidity greenhouses.",
+          symptoms: "Yellow upper spots, olive mold underneath.",
+          management: "Ventilation + fungicides.",
+          prevention: "Spacing, humidity control.",
+        },
+
+        Tomato___Septoria_leaf_spot: {
+          occurrence: "Fungus *Septoria lycopersici*, warm wet season.",
+          symptoms: "Small circular gray-centered lesions.",
+          management: "Remove infected leaves, fungicides.",
+          prevention: "Stake plants, soil irrigation.",
+        },
+
+        "Tomato___Spider_mites Two-spotted_spider_mite": {
+          occurrence: "Mite *Tetranychus urticae* in hot dry conditions.",
+          symptoms: "Yellow speckles, bronzing, fine webbing.",
+          management: "Miticides, neem oil, predatory mites.",
+          prevention: "Adequate irrigation, avoid broad-spectrum pesticides.",
+        },
+
+        Tomato___Target_Spot: {
+          occurrence: "Fungus *Corynespora cassiicola* in humid tropics.",
+          symptoms: "Target-like spots on leaves & fruit.",
+          management: "Spacing, debris removal, fungicides.",
+          prevention: "Crop rotation, pruning lower leaves.",
+        },
+
+        Tomato___Tomato_mosaic_virus: {
+          occurrence: "Tobamovirus; survives on tools & seeds.",
+          symptoms: "Mottled distorted leaves, uneven ripening.",
+          management: "Remove infected plants, disinfect tools.",
+          prevention: "Certified virus-free seed, greenhouse sanitation.",
+        },
+
+        Tomato___healthy: {
+          occurrence: "No pests or pathogens.",
+          symptoms: "Healthy foliage & fruit.",
+          management: "Balanced nutrition & hygiene.",
+          prevention: "Routine scouting.",
+        },
+      };
+
+      /* ---------- Populate ---------- */
+      (() => {
+        const root = document.getElementById("card-root");
+        const label = root.dataset.label;
+        const conf = parseFloat(root.dataset.confidence || "0");
+        const bar = document.getElementById("bar");
+        const details = document.getElementById("details");
+
+        // Animate progress
+        bar.style.width =
+          (isFinite(conf) ? Math.max(0, Math.min(100, conf)) : 0) + "%";
+
+        // Render encyclopedia
+        if (guide[label]) {
+          let html = "";
+          Object.entries(guide[label]).forEach(([key, val]) => {
+            html += `<h4>${key.charAt(0).toUpperCase() + key.slice(1)}</h4>`;
+            if (typeof val === "object") {
+              html += "<ul>";
+              Object.entries(val).forEach(
+                ([k, v]) => (html += `<li><strong>${k}:</strong> ${v}</li>`)
+              );
+              html += "</ul>";
+            } else {
+              html += `<p>${val}</p>`;
+            }
+          });
+          details.innerHTML = html;
+        } else {
+          details.innerHTML = "<p>No further information available.</p>";
+        }
+      })();
+    </script>
+  </body>
+</html>
