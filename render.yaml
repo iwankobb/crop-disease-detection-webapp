@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: crop-disease-detection
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    gitLfsEnabled: true
+    envVars:
+      - key: RENDER
+        value: "true"
