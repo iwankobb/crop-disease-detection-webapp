@@ -6,8 +6,8 @@ MarkupSafe>=2.0.1
 click>=8.0.3
 itsdangerous>=2.0.1
 
-# ML / Computer Vision - use tensorflow-cpu for smaller footprint
-tensorflow-cpu>=2.15.0
+# ML / Computer Vision
+tensorflow>=2.15.0
 numpy>=1.22.2
 opencv-contrib-python-headless>=4.5.5.62
 h5py>=3.0.0
