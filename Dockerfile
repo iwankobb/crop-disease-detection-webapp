@@ -1,16 +1,12 @@
-# Use Python 3.11 slim
+# Use Python 3.11 slim (Debian bookworm)
 FROM python:3.11-slim
 
-# Install system dependencies for OpenCV + git-lfs
+# Install only what's needed: libgl1 (replaces libgl1-mesa-glx in bookworm) + git-lfs
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
     git \
     git-lfs \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -45,5 +41,5 @@ RUN mkdir -p static/shots
 # Expose port
 EXPOSE 5000
 
-# Use single worker to stay within free tier memory (512MB)
+# Use single worker to stay within free tier memory
 CMD gunicorn --bind 0.0.0.0:${PORT:-5000} --timeout 300 --workers 1 --threads 2 --preload app:app
