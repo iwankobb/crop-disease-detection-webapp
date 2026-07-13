@@ -25,12 +25,8 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Camera - only initialize if not in production (Render has no webcam)
+# Camera disabled
 camera = None
-if os.environ.get('RENDER') is None and os.environ.get('PORT') is None:
-    try:
-        camera = cv2.VideoCapture(0)
-    except Exception:
-        camera = None
 
 # Random name for captured image
 variable_name = str(randint(0, 100))
